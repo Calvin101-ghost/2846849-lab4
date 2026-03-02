@@ -1,11 +1,14 @@
+const spinner = document.getElementById('loading-spinner');
+const error_message = document.getElementById('error-message');
+spinner.classList.add('hidden');
+
 async function searchCountry(countryName) {
-    const spinner = document.getElementById('loading-spinner');
-    const error_message = document.getElementById('error-message');
     try {
         const response = await fetch(`https://restcountries.com/v3.1/name/${countryName}`);
         // Show loading spinner
-
-         if(!response.ok){
+        spinner.classList.remove('hidden');
+        error_message.textContent = " ";
+        if(!response.ok){
              error_message.textContent = "Please enter a valid country name.";
              throw new Error("Please enter a valid country name");
         }
@@ -34,6 +37,10 @@ async function searchCountry(countryName) {
 
 // Event listeners
 document.getElementById('search-btn').addEventListener('click', () => {
+    const country = document.getElementById('country-input').value;
+    searchCountry(country);
+});
+document.getElementById('country-input').addEventListener('keypress', () => {
     const country = document.getElementById('country-input').value;
     searchCountry(country);
 });
