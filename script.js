@@ -1,5 +1,6 @@
 const spinner = document.getElementById('loading-spinner');
 const error_message = document.getElementById('error-message');
+const borderingCountries = document.getElementById('bordering-countries');
 spinner.classList.add('hidden');
 
 async function searchCountry(countryName) {
@@ -7,12 +8,11 @@ async function searchCountry(countryName) {
         const response = await fetch(`https://restcountries.com/v3.1/name/${countryName}`);
         // Show loading spinner
         spinner.classList.remove('hidden');
-        error_message.textContent = " ";
+        error_message.innerHTML = '';
+        borderingCountries.innerHTML = '';
         if(!response.ok){
-             error_message.textContent = "Please enter a valid country name.";
              throw new Error("Please enter a valid country name");
         }
-        error_message.classList.add('hidden');
         // Fetch country data
         const data = await response.json();
         const country = data[0];
@@ -25,10 +25,30 @@ async function searchCountry(countryName) {
         <img src="${country.flags.svg}" alt="${country.name.common} flag">
         `;
         // Fetch bordering countries
+        if(country.borders && country.borders.length >0){
+            let bordershtml = '<h3> Bordering Countries</h3>';
+            const bordersPromises = country.borders.map(async (code)=>{
+                const borderRseponse = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+                const borderData = await borderRseponse.json();
+                const neighbor = borderData[0];
+                return `<div>
+                            <img src="${neighbor.flags.svg}" alt="${neighbor.name.common} flag" width = "80">
+                            <p>${neighbor.name.common}</p>
+                        </div>
+                `;
+            });
+            const bordersElements = await Promise.all(bordersPromises);
+            bordershtml += bordersElements.join('');
+            borderingCountries.innerHTML = bordershtml;
+        }
+        else{
+                borderingCountries.innerHTML = '<h3> Bordering Countries: </h3><p>This country has no land borders</p>';
+            }
+        
         // Update bordering countries section
     } catch (error) {
         // Show error message
-        console.log(error);
+        error_message.innerHTML = error.message;
     } finally {
         // Hide loading spinner
         spinner.classList.add('hidden');
